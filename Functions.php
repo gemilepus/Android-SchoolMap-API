@@ -52,7 +52,9 @@ class Functions{
                    
                     $payload = array(
                         "name" => $result["name"],
-                        "iat" => time()
+                        "unique_id" => $result["unique_id"],
+                        "iat" => time(),
+                        "exp" => time() + 300,
                     );
                     $jwt = JWT::encode($payload, static::$key, 'HS256');
                     
@@ -79,7 +81,7 @@ class Functions{
             if(!$db -> checkLogin($email, $old_password)){
 
                 $response["result"] = "failure";
-                $response["message"] = 'Invalid Old Password';
+                $response["message"] = 'Error Old Password';
                 return json_encode($response);
             } else {
                 $result = $db -> changePassword($email, $new_password);
@@ -109,6 +111,7 @@ class Functions{
             } else {
 
                 try{
+                    JWT::$leeway = 30;
                     $decoded = JWT::decode($token, new Key(static::$key, 'HS256'));
 
                     $result = $db -> newinfo($head, $type , $text , $unique_id , $longitude , $latitude);
@@ -124,7 +127,7 @@ class Functions{
                   
                   } catch( Exception $e ){
                     $response["result"] = "failure";
-                    $response["message"] = "Error";
+                    $response["message"] = "Authentication failed";
                     return json_encode($response);
                   }
                
