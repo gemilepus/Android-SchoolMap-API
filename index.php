@@ -69,6 +69,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                     && isset($data->user->unique_id)
                     && isset($data->user->longitude)
                     && isset($data->user->latitude)
+                    && isset($data->token)
                 ) {
                     $user = $data->user;
                     $email = $user->email;
@@ -79,9 +80,10 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                     $unique_id = $user->unique_id;
                     $longitude = $user->longitude;
                     $latitude = $user->latitude;
-                    //$new_info = $user -> new_info;
 
-                    echo $fun->changeInfo($email, $old_password, $head, $type, $text, $unique_id, $longitude, $latitude);
+                    $token = $data->token;
+
+                    echo $fun->newinfo($email, $old_password, $head, $type, $text, $unique_id, $longitude, $latitude, $token);
                 } else {
                     echo $fun->getMsgInvalidParam();
                 }
@@ -102,8 +104,9 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                     $type = $user->type;
                     $text = $user->text;
                     $unique_id = $user->unique_id;
+                   
 
-                    echo $fun->changeInfo($email, $old_password, $head, $type, $text, $unique_id);
+                    echo $fun->newinfo($email, $old_password, $head, $type, $text, $unique_id);
                 } else {
                     echo $fun->getMsgInvalidParam();
                 }
@@ -121,21 +124,6 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                     $unique_id = $user->unique_id;
 
                     echo $fun->InfoRemove($head, $sno, $unique_id);
-                } else {
-                    echo $fun->getMsgInvalidParam();
-                }
-            } else if ($operation == 'unijson') {
-
-                if (isset($data->user)
-                    && !empty($data->user)
-                    && isset($data->user->email)
-                    && isset($data->user->unique_id)
-                ) {
-                    $user = $data->user;
-                    $email = $user->email;
-                    $unique_id = $user->unique_id;
-
-                    echo $fun->unijson($email, $unique_id);
                 } else {
                     echo $fun->getMsgInvalidParam();
                 }

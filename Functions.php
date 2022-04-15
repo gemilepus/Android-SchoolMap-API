@@ -1,7 +1,12 @@
 <?php
+require 'vendor/autoload.php';
+use Firebase\JWT\JWT;
+use Firebase\JWT\Key;
+
 require_once 'DBOperations.php';
 
 class Functions{
+    public static $key = "test_key";
     private $db;
 
     public function __construct() {
@@ -44,9 +49,17 @@ class Functions{
                     $response["message"] = "Invaild Login Credentials";
                     return json_encode($response);
                 } else {
+                   
+                    $payload = array(
+                        "name" => $result["name"],
+                        "iat" => time()
+                    );
+                    $jwt = JWT::encode($payload, static::$key, 'HS256');
+                    
                     $response["result"] = "success";
                     $response["message"] = "Login Successful";
                     $response["user"] = $result;
+                    $response["token"] = $jwt;
                     return json_encode($response);
                 }
             } else {
@@ -85,25 +98,36 @@ class Functions{
         }
     }
 
-    public function changeInfo($email, $old_password , $head , $type ,$text , $unique_id , $longitude , $latitude) {
+    public function newinfo($email, $old_password , $head , $type ,$text , $unique_id , $longitude , $latitude, $token) {
         $db = $this -> db;
 
         if (!empty($email) && !empty($old_password) && !empty($head)) {
-            if(!$db -> checkLogin($email, $old_password)){   //  登入檢查
+            if(!$db -> checkLogin($email, $old_password)){
                 $response["result"] = "failure";
-                $response["message"] = 'Invalid Old Password';
+                $response["message"] = 'Password Error';
                 return json_encode($response);
             } else {
-                $result = $db -> changeInfo($head, $type ,$text , $unique_id , $longitude , $latitude); //DBOperations.php
-                if($result) {
-                    $response["result"] = "success";
-                    $response["message"] = "資料新增成功";
-                    return json_encode($response);
-                } else {
+
+                try{
+                    $decoded = JWT::decode($token, new Key(static::$key, 'HS256'));
+
+                    $result = $db -> newinfo($head, $type , $text , $unique_id , $longitude , $latitude);
+                    if($result) {
+                        $response["result"] = "success";
+                        $response["message"] = "Done";
+                        return json_encode($response);
+                    } else {
+                        $response["result"] = "failure";
+                        $response["message"] = "Error";
+                        return json_encode($response);
+                    }
+                  
+                  } catch( Exception $e ){
                     $response["result"] = "failure";
-                    $response["message"] = 'Error';
+                    $response["message"] = "Error";
                     return json_encode($response);
-                }
+                  }
+               
             }
         } else {
             return $this -> getMsgParamNotEmpty();
@@ -115,35 +139,13 @@ class Functions{
         $result = $db -> InfoRemove($head , $sno  , $unique_id);
         if($result) {
             $response["result"] = "success";
-            $response["message"] = "刪除成功";
+            $response["message"] = "Done";
             return json_encode($response);
         } else {
             $response["result"] = "failure";
             $response["message"] = 'Error';
             return json_encode($response);
         }
-    }
-
-    public function unijson($email,$unique_id) {
-        $db = $this -> db;
-        $response["result"] = "success";
-        $response["message"] = "安安 JSON";
-
-        include("connMysqlObj.php");
-        $seldb = @mysqli_select_db($db_link, "login-register-system");
-        if (!$seldb) die("資料庫選擇失敗！");
-
-        $sql_query = "SELECT * FROM info";
-        $result = mysqli_query($db_link, $sql_query);
-        $code=array();
-        while($row_result=mysqli_fetch_assoc($result)){
-            $row_array['ver']=$row_result['head'];
-            $row_array['name']= $row_result['type'];
-            $row_array['api']= $row_result['text'];
-            array_push($code,$row_array);
-        }
-        $response['android'] = $code;
-        return json_encode($response);
     }
 
     public function isEmailValid($email){

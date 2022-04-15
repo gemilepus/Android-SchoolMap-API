@@ -61,7 +61,7 @@ class DBOperations{
         }
     }
 
-    public function changeInfo($head, $type ,$text , $unique_id, $longitude , $latitude){
+    public function newinfo($head, $type ,$text , $unique_id, $longitude , $latitude){
         $sql = 'INSERT INTO info SET head = :head, type = :type , text = :text , unique_id = :unique_id , longitude = :longitude , latitude = :latitude' ;
         $query = $this -> conn -> prepare($sql);
         $query -> execute(array( ':head' => $head, ':type' =>$type , ':text' => $text ,':unique_id' => $unique_id ,':longitude' => $longitude , ':latitude' => $latitude ));
