@@ -2,7 +2,7 @@
 include "connMysqlObj.php";
 $seldb = @mysqli_select_db($db_link, "login-register-system");
 if (!$seldb) {
-    die("connMysql error！");
+    die("Database connection failure！");
 }
 
 require_once 'Functions.php';

@@ -1,13 +1,10 @@
 <?php
 class DBOperations{
-    private $host = '127.0.0.1';
-    private $user = 'root';
-    private $db = 'login-register-system';
-    private $pass = '';
     private $conn;
 
     public function __construct() {
-        $this -> conn = new PDO("mysql:host=".$this -> host.";dbname=".$this -> db.";charset=utf8mb4",$this -> user, $this -> pass);
+        include "connMysqlObj.php";
+        $this -> conn = new PDO("mysql:host=".$dbhost.";dbname=".$dbname.";charset=utf8mb4", $dbuser, $dbpass);
         //$this -> conn = @new mysqli($db_host, $db_username, $db_password, $db_name);
     }
 
