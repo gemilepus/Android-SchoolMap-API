@@ -47,14 +47,24 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                     echo $fun->getMsgInvalidParam();
                 }
             } else if ($operation == 'chgPass') {
-                if (isset($data->user) && !empty($data->user) && isset($data->user->email) && isset($data->user->old_password)
-                    && isset($data->user->new_password)) {
+                if (isset($data->user) && !empty($data->user) && isset($data->user->email) && isset($data->user->old_password )
+                    && isset($data->user->new_password) && isset($data->token)) {
                     $user = $data->user;
                     $email = $user->email;
                     $old_password = $user->old_password;
                     $new_password = $user->new_password;
 
-                    echo $fun->changePassword($email, $old_password, $new_password);
+                    $token = $data->token;
+
+                    $res = $fun->CheckToken($token);
+                    if(!$res["result"]){
+                        $response["result"] = "failure";
+                        $response["message"] = "Authentication failed";
+                        echo json_encode($response);
+                    }else{
+                        echo $fun->changePassword($email, $old_password, $new_password);
+                    }
+                    
                 } else {
                     echo $fun->getMsgInvalidParam();
                 }
@@ -83,7 +93,15 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 
                     $token = $data->token;
 
-                    echo $fun->newinfo($email, $old_password, $head, $type, $text, $unique_id, $longitude, $latitude, $token);
+                    $res = $fun->CheckToken($token);
+                    if(!$res["result"]){
+                        $response["result"] = "failure";
+                        $response["message"] = "Authentication failed";
+                        echo json_encode($response);
+                    }else{
+                        echo $fun->newinfo($email, $old_password, $head, $type, $text, $unique_id, $longitude, $latitude, $token);
+                    }
+ 
                 } else {
                     echo $fun->getMsgInvalidParam();
                 }
@@ -113,17 +131,27 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             } else if ($operation == 'removeinfo') {
                 if (isset($data->user)
                     && !empty($data->user)
-
                     && isset($data->user->sno)
                     && isset($data->user->head)
                     && isset($data->user->unique_id)
+                    && isset($data->token)
                 ) {
                     $user = $data->user;
                     $sno = $user->sno;
                     $head = $user->head;
                     $unique_id = $user->unique_id;
 
-                    echo $fun->InfoRemove($head, $sno, $unique_id);
+                    $token = $data->token;
+
+                    $res = $fun->CheckToken($token);
+                    if(!$res["result"]){
+                        $response["result"] = "failure";
+                        $response["message"] = "Authentication failed";
+                        echo json_encode($response);
+                    }else{
+                        echo $fun->InfoRemove($head, $sno, $unique_id);
+                    }
+ 
                 } else {
                     echo $fun->getMsgInvalidParam();
                 }

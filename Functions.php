@@ -109,32 +109,38 @@ class Functions{
                 $response["message"] = 'Password Error';
                 return json_encode($response);
             } else {
-
-                try{
-                    JWT::$leeway = 30;
-                    $decoded = JWT::decode($token, new Key(static::$key, 'HS256'));
-
-                    $result = $db -> newinfo($head, $type , $text , $unique_id , $longitude , $latitude);
-                    if($result) {
-                        $response["result"] = "success";
-                        $response["message"] = "Done";
-                        return json_encode($response);
-                    } else {
-                        $response["result"] = "failure";
-                        $response["message"] = "Error";
-                        return json_encode($response);
-                    }
-                  
-                  } catch( Exception $e ){
-                    $response["result"] = "failure";
-                    $response["message"] = "Authentication failed";
+                $result = $db -> newinfo($head, $type , $text , $unique_id , $longitude , $latitude);
+                if($result) {
+                    $response["result"] = "success";
+                    $response["message"] = "Done";
                     return json_encode($response);
-                  }
-               
+                } else {
+                    $response["result"] = "failure";
+                    $response["message"] = "Error";
+                    return json_encode($response);
+                }
             }
         } else {
             return $this -> getMsgParamNotEmpty();
         }
+    }
+
+    public function CheckToken($token) {
+        try{
+            JWT::$leeway = 30;
+            $decoded = JWT::decode($token, new Key(static::$key, 'HS256'));
+            $res["result"] = true;
+            $res["msg"] = "OK";
+
+            return $res;    
+          
+          } catch( Exception $e ){
+            $res["result"] = false;
+            $res["msg"] = $e -> getMessage();
+
+            return $res;    
+          }
+
     }
 
     public function InfoRemove( $head , $sno  , $unique_id) {
