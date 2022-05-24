@@ -157,7 +157,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                 }
             } else if ($operation == 'getdata') {
 
-                $sql_query = "SELECT * FROM info ";
+                $sql_query = "SELECT * FROM info ORDER BY sno";
                 $result = mysqli_query($db_link, $sql_query);
 
                 $code = array();
@@ -170,6 +170,8 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                     $row_array['type'] = $row_result['type'];
 
                     $row_array['text'] = $row_result['text'];
+                    
+                    $row_array['sno'] = $row_result['sno'];
 
                     array_push($code['android'], $row_array);
 
