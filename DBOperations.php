@@ -5,7 +5,6 @@ class DBOperations{
     public function __construct() {
         include "connMysqlObj.php";
         $this -> conn = new PDO("mysql:host=".$dbhost.";dbname=".$dbname.";charset=utf8mb4", $dbuser, $dbpass);
-        //$this -> conn = @new mysqli($db_host, $db_username, $db_password, $db_name);
     }
 
     public function insertData($name,$email,$password){
@@ -17,8 +16,13 @@ class DBOperations{
         $sql = 'INSERT INTO users SET unique_id =:unique_id,name =:name,
     email =:email,encrypted_password =:encrypted_password,salt =:salt,created_at = NOW()';
         $query = $this ->conn ->prepare($sql);
-        $query->execute(array('unique_id' => $unique_id, ':name' => $name, ':email' => $email,
-            ':encrypted_password' => $encrypted_password, ':salt' => $salt));
+        $query -> bindParam(':unique_id', $unique_id, PDO::PARAM_STR);
+        $query -> bindParam(':name', $name, PDO::PARAM_STR);
+        $query -> bindParam(':email', $email, PDO::PARAM_STR);
+        $query -> bindParam(':encrypted_password', $encrypted_password, PDO::PARAM_STR);
+        $query -> bindParam(':salt', $salt, PDO::PARAM_STR);
+        $query -> execute();
+
         if ($query) {
             return true;
         } else {
@@ -29,7 +33,8 @@ class DBOperations{
     public function checkLogin($email, $password) {
         $sql = 'SELECT * FROM users WHERE email = :email';
         $query = $this -> conn -> prepare($sql);
-        $query -> execute(array(':email' => $email));
+        $query -> bindParam(':email', $email, PDO::PARAM_STR);
+        $query -> execute();
         $data = $query -> fetchObject();
         $salt = $data -> salt;
         $db_encrypted_password = $data -> encrypted_password;
@@ -50,7 +55,11 @@ class DBOperations{
 
         $sql = 'UPDATE users SET encrypted_password = :encrypted_password, salt = :salt WHERE email = :email';
         $query = $this -> conn -> prepare($sql);
-        $query -> execute(array(':email' => $email, ':encrypted_password' => $encrypted_password, ':salt' => $salt));
+        $query -> bindParam(':email', $email, PDO::PARAM_STR);
+        $query -> bindParam(':encrypted_password', $encrypted_password, PDO::PARAM_STR);
+        $query -> bindParam(':salt', $salt, PDO::PARAM_STR);
+        $query -> execute();
+
         if ($query) {
             return true;
         } else {
@@ -61,7 +70,14 @@ class DBOperations{
     public function newinfo($head, $type ,$text , $unique_id, $longitude , $latitude){
         $sql = 'INSERT INTO info SET head = :head, type = :type , text = :text , unique_id = :unique_id , longitude = :longitude , latitude = :latitude' ;
         $query = $this -> conn -> prepare($sql);
-        $query -> execute(array( ':head' => $head, ':type' =>$type , ':text' => $text ,':unique_id' => $unique_id ,':longitude' => $longitude , ':latitude' => $latitude ));
+        $query -> bindParam(':head', $head, PDO::PARAM_STR);
+        $query -> bindParam(':type', $type, PDO::PARAM_STR);
+        $query -> bindParam(':text', $text, PDO::PARAM_STR);
+        $query -> bindParam(':unique_id', $unique_id, PDO::PARAM_STR);
+        $query -> bindParam(':longitude', $longitude, PDO::PARAM_STR);
+        $query -> bindParam(':latitude', $latitude, PDO::PARAM_STR);
+        $query -> execute();
+
         if ($query) {
             return true;
         } else {
@@ -72,7 +88,11 @@ class DBOperations{
     public function InfoRemove($head , $sno , $unique_id) {
         $sql = 'DELETE FROM info WHERE head = :head AND sno = :sno AND unique_id = :unique_id' ;
         $query = $this -> conn -> prepare($sql);
-        $query -> execute(array( ':head' => $head , ':sno' => $sno ,':unique_id' => $unique_id));
+        $query -> bindParam(':head', $head, PDO::PARAM_STR);
+        $query -> bindParam(':sno', $sno, PDO::PARAM_INT);
+        $query -> bindParam(':unique_id', $unique_id, PDO::PARAM_STR);
+        $query -> execute();
+
         if ($query) {
             return true;
         } else {
@@ -83,7 +103,8 @@ class DBOperations{
     public function checkUserExist($email){
         $sql = 'SELECT COUNT(*) from users WHERE email =:email';
         $query = $this -> conn -> prepare($sql);
-        $query -> execute(array('email' => $email));
+        $query -> bindParam(':email', $email, PDO::PARAM_STR);
+        $query -> execute();
         if($query){
             $row_count = $query -> fetchColumn();
             if ($row_count == 0){
@@ -107,5 +128,63 @@ class DBOperations{
     public function verifyHash($password, $hash) {
         return password_verify ($password, $hash);
     }
+
+    public function getdata() {
+
+        $sql = 'SELECT * FROM info ORDER BY sno';
+        $query = $this -> conn -> prepare($sql);
+        $query -> execute();
+
+        $res = array();
+        $res['android'] = array();
+        
+        while ($row_result = $query->fetch(PDO::FETCH_ASSOC)) {
+    
+            $row_array['head'] = $row_result['head'];
+    
+            $row_array['type'] = $row_result['type'];
+    
+            $row_array['text'] = $row_result['text'];
+            
+            $row_array['sno'] = $row_result['sno'];
+    
+            array_push($res['android'], $row_array);
+    
+        }
+
+        return $res;
+    }
+
+    public function getdatabyid($id) {
+
+        $sql = 'SELECT * FROM info WHERE unique_id = :id';
+        $query = $this -> conn -> prepare($sql);
+        $query -> bindParam(':id', $id, PDO::PARAM_STR);
+        $query -> execute();
+
+        $res = array();
+        $res['android'] = array();
+
+        while ($row_result = $query->fetch(PDO::FETCH_ASSOC)) {
+
+            $row_array['head'] = $row_result['head'];
+
+            $row_array['type'] = $row_result['type'];
+
+            $row_array['text'] = $row_result['text'];
+
+            $row_array['sno'] = $row_result['sno'];
+
+            $row_array['longitude'] = $row_result['longitude'];
+
+            $row_array['latitude'] = $row_result['latitude'];
+
+            array_push($res['android'], $row_array);
+
+        }
+
+        return $res;
+    }
+
 }
 ?>

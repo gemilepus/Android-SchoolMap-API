@@ -1,10 +1,4 @@
 <?php
-include "connMysqlObj.php";
-$seldb = @mysqli_select_db($db_link, "login-register-system");
-if (!$seldb) {
-    die("Database connection failure！");
-}
-
 require_once 'Functions.php';
 
 $fun = new Functions();
@@ -157,56 +151,11 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                 }
             } else if ($operation == 'getdata') {
 
-                $sql_query = "SELECT * FROM info ORDER BY sno";
-                $result = mysqli_query($db_link, $sql_query);
-
-                $code = array();
-                $code['android'] = array();
-
-                while ($row_result = mysqli_fetch_assoc($result)) {
-
-                    $row_array['head'] = $row_result['head'];
-
-                    $row_array['type'] = $row_result['type'];
-
-                    $row_array['text'] = $row_result['text'];
-                    
-                    $row_array['sno'] = $row_result['sno'];
-
-                    array_push($code['android'], $row_array);
-
-                }
-
-                echo json_encode($code);
+                echo $fun->getdata();
 
             } else if ($operation == 'getdatabyid') {
 
-                $sql_query = "SELECT * FROM info WHERE unique_id LIKE '" . $_GET["id"] . "'";
-                $result = mysqli_query($db_link, $sql_query);
-
-                $code = array();
-
-                $code['android'] = array();
-
-                while ($row_result = mysqli_fetch_assoc($result)) {
-
-                    $row_array['head'] = $row_result['head'];
-
-                    $row_array['type'] = $row_result['type'];
-
-                    $row_array['text'] = $row_result['text'];
-
-                    $row_array['sno'] = $row_result['sno'];
-
-                    $row_array['longitude'] = $row_result['longitude'];
-
-                    $row_array['latitude'] = $row_result['latitude'];
-
-                    array_push($code['android'], $row_array);
-
-                }
-
-                echo json_encode($code);
+                echo $fun->getdatabyid($_GET["id"]);
 
             }
 

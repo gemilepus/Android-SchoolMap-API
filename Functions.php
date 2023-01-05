@@ -5,24 +5,27 @@ use Firebase\JWT\Key;
 
 require_once 'DBOperations.php';
 
-class Functions{
+class Functions
+{
     public static $key = "test_key";
     private $db;
 
-    public function __construct() {
-        $this -> db = new DBOperations();
+    public function __construct()
+    {
+        $this->db = new DBOperations();
     }
 
-    public function registerUser($name, $email, $password) {
-        $db = $this -> db;
+    public function registerUser($name, $email, $password)
+    {
+        $db = $this->db;
 
         if (!empty($name) && !empty($email) && !empty($password)) {
-            if ($db -> checkUserExist($email)) {
+            if ($db->checkUserExist($email)) {
                 $response["result"] = "failure";
                 $response["message"] = "User Already Registered !";
                 return json_encode($response);
             } else {
-                $result = $db -> insertData($name, $email, $password);
+                $result = $db->insertData($name, $email, $password);
                 if ($result) {
                     $response["result"] = "success";
                     $response["message"] = "User Registered Successfully !";
@@ -34,22 +37,23 @@ class Functions{
                 }
             }
         } else {
-            return $this -> getMsgParamNotEmpty();
+            return $this->getMsgParamNotEmpty();
         }
     }
 
-    public function loginUser($email, $password) {
-        $db = $this -> db;
+    public function loginUser($email, $password)
+    {
+        $db = $this->db;
 
         if (!empty($email) && !empty($password)) {
-            if ($db -> checkUserExist($email)) {
-                $result =  $db -> checkLogin($email, $password);
-                if(!$result) {
+            if ($db->checkUserExist($email)) {
+                $result = $db->checkLogin($email, $password);
+                if (!$result) {
                     $response["result"] = "failure";
                     $response["message"] = "Invaild Login Credentials";
                     return json_encode($response);
                 } else {
-                   
+
                     $payload = array(
                         "name" => $result["name"],
                         "unique_id" => $result["unique_id"],
@@ -57,7 +61,7 @@ class Functions{
                         "exp" => time() + 300,
                     );
                     $jwt = JWT::encode($payload, static::$key, 'HS256');
-                    
+
                     $response["result"] = "success";
                     $response["message"] = "Login Successful";
                     $response["user"] = $result;
@@ -70,22 +74,23 @@ class Functions{
                 return json_encode($response);
             }
         } else {
-            return $this -> getMsgParamNotEmpty();
+            return $this->getMsgParamNotEmpty();
         }
     }
 
-    public function changePassword($email, $old_password, $new_password) {
-        $db = $this -> db;
+    public function changePassword($email, $old_password, $new_password)
+    {
+        $db = $this->db;
 
         if (!empty($email) && !empty($old_password) && !empty($new_password)) {
-            if(!$db -> checkLogin($email, $old_password)){
+            if (!$db->checkLogin($email, $old_password)) {
 
                 $response["result"] = "failure";
                 $response["message"] = 'Error Old Password';
                 return json_encode($response);
             } else {
-                $result = $db -> changePassword($email, $new_password);
-                if($result) {
+                $result = $db->changePassword($email, $new_password);
+                if ($result) {
                     $response["result"] = "success";
                     $response["message"] = "Password Changed Successfully";
                     return json_encode($response);
@@ -96,21 +101,22 @@ class Functions{
                 }
             }
         } else {
-            return $this -> getMsgParamNotEmpty();
+            return $this->getMsgParamNotEmpty();
         }
     }
 
-    public function newinfo($email, $old_password , $head , $type ,$text , $unique_id , $longitude , $latitude, $token) {
-        $db = $this -> db;
+    public function newinfo($email, $old_password, $head, $type, $text, $unique_id, $longitude, $latitude, $token)
+    {
+        $db = $this->db;
 
         if (!empty($email) && !empty($old_password) && !empty($head)) {
-            if(!$db -> checkLogin($email, $old_password)){
+            if (!$db->checkLogin($email, $old_password)) {
                 $response["result"] = "failure";
                 $response["message"] = 'Password Error';
                 return json_encode($response);
             } else {
-                $result = $db -> newinfo($head, $type , $text , $unique_id , $longitude , $latitude);
-                if($result) {
+                $result = $db->newinfo($head, $type, $text, $unique_id, $longitude, $latitude);
+                if ($result) {
                     $response["result"] = "success";
                     $response["message"] = "Done";
                     return json_encode($response);
@@ -121,32 +127,34 @@ class Functions{
                 }
             }
         } else {
-            return $this -> getMsgParamNotEmpty();
+            return $this->getMsgParamNotEmpty();
         }
     }
 
-    public function CheckToken($token) {
-        try{
+    public function CheckToken($token)
+    {
+        try {
             JWT::$leeway = 30;
             $decoded = JWT::decode($token, new Key(static::$key, 'HS256'));
             $res["result"] = true;
             $res["msg"] = "OK";
 
-            return $res;    
-          
-          } catch( Exception $e ){
-            $res["result"] = false;
-            $res["msg"] = $e -> getMessage();
+            return $res;
 
-            return $res;    
-          }
+        } catch (Exception $e) {
+            $res["result"] = false;
+            $res["msg"] = $e->getMessage();
+
+            return $res;
+        }
 
     }
 
-    public function InfoRemove( $head , $sno  , $unique_id) {
-        $db = $this -> db;
-        $result = $db -> InfoRemove($head , $sno  , $unique_id);
-        if($result) {
+    public function InfoRemove($head, $sno, $unique_id)
+    {
+        $db = $this->db;
+        $result = $db->InfoRemove($head, $sno, $unique_id);
+        if ($result) {
             $response["result"] = "success";
             $response["message"] = "Done";
             return json_encode($response);
@@ -157,26 +165,43 @@ class Functions{
         }
     }
 
-    public function isEmailValid($email){
+    public function isEmailValid($email)
+    {
         return filter_var($email, FILTER_VALIDATE_EMAIL);
     }
 
-    public function getMsgParamNotEmpty(){
+    public function getMsgParamNotEmpty()
+    {
         $response["result"] = "failure";
         $response["message"] = "Parameters should not be empty !";
         return json_encode($response);
     }
 
-    public function getMsgInvalidParam(){
+    public function getMsgInvalidParam()
+    {
         $response["result"] = "failure";
         $response["message"] = "Invalid Parameters";
         return json_encode($response);
     }
 
-    public function getMsgInvalidEmail(){
+    public function getMsgInvalidEmail()
+    {
         $response["result"] = "failure";
         $response["message"] = "Invalid Email";
         return json_encode($response);
     }
+
+    public function getdata()
+    {
+        $db = $this->db;
+        $result = $db->getdata();
+        return json_encode($result);
+    }
+
+    public function getdatabyid($id)
+    {
+        $db = $this->db;
+        $result = $db->getdatabyid($id);
+        return json_encode($result);
+    }
 }
-?>
